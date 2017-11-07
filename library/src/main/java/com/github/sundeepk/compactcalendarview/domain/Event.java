@@ -1,22 +1,24 @@
 package com.github.sundeepk.compactcalendarview.domain;
 
+import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 
 public class Event {
-
     private int color;
     private long timeInMillis;
     private Object data;
+    private Bitmap bitmap;
 
     public Event(int color, long timeInMillis) {
         this.color = color;
         this.timeInMillis = timeInMillis;
     }
 
-    public Event(int color, long timeInMillis, Object data) {
+    public Event(int color, long timeInMillis, Object data, Bitmap bitmap) {
         this.color = color;
         this.timeInMillis = timeInMillis;
         this.data = data;
+        this.bitmap = bitmap;
     }
 
     public int getColor() {
@@ -25,6 +27,10 @@ public class Event {
 
     public long getTimeInMillis() {
         return timeInMillis;
+    }
+
+    public Bitmap getBitmap() {
+        return bitmap;
     }
 
     @Nullable

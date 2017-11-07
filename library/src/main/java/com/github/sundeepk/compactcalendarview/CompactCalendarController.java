@@ -2,6 +2,7 @@ package com.github.sundeepk.compactcalendarview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -62,6 +63,7 @@ class CompactCalendarController {
     private int animationStatus = 0;
     private int firstDayOfWeekToDraw = Calendar.MONDAY;
     private float xIndicatorOffset;
+    private float xIndicatorOffsetBig;
     private float multiDayIndicatorStrokeWidth;
     private float bigCircleIndicatorRadius;
     private float smallIndicatorRadius;
@@ -134,6 +136,7 @@ class CompactCalendarController {
         this.locale = locale;
         this.timeZone = timeZone;
         this.displayOtherMonthDays = false;
+
         loadAttributes(attrs, context);
         init(context);
     }
@@ -201,6 +204,7 @@ class CompactCalendarController {
         initScreenDensityRelatedValues(context);
 
         xIndicatorOffset = 3.5f * screenDensity;
+        xIndicatorOffsetBig = 12f * screenDensity;
 
         //scale small indicator by screen density
         smallIndicatorRadius = 2.5f * screenDensity;
@@ -769,7 +773,7 @@ class CompactCalendarController {
                 if (shouldDrawIndicatorsBelowSelectedDays || (!shouldDrawIndicatorsBelowSelectedDays && !isSameDayAsCurrentDay && !isCurrentSelectedDay) || animationStatus == EXPOSE_CALENDAR_ANIMATION) {
                     if (eventIndicatorStyle == FILL_LARGE_INDICATOR || eventIndicatorStyle == NO_FILL_LARGE_INDICATOR) {
                         Event event = eventsList.get(0);
-                        drawEventIndicatorCircle(canvas, xPosition, yPosition, event.getColor());
+                        drawIndicator(canvas, xPosition, yPosition, event);
                     } else {
                         yPosition += indicatorOffset;
                         // offset event indicators to draw below selected day indicators
@@ -792,15 +796,34 @@ class CompactCalendarController {
     }
 
     private void drawSingleEvent(Canvas canvas, float xPosition, float yPosition, List<Event> eventsList) {
+        float XPositionEvent = xPosition;
         Event event = eventsList.get(0);
-        drawEventIndicatorCircle(canvas, xPosition, yPosition, event.getColor());
+        if (null != event.getBitmap()) {
+            XPositionEvent += this.xIndicatorOffsetBig;
+        }
+        drawIndicator(canvas, XPositionEvent, yPosition, event);
     }
 
     private void drawTwoEvents(Canvas canvas, float xPosition, float yPosition, List<Event> eventsList) {
-        //draw fist event just left of center
-        drawEventIndicatorCircle(canvas, xPosition + (xIndicatorOffset * -1), yPosition, eventsList.get(0).getColor());
-        //draw second event just right of center
-        drawEventIndicatorCircle(canvas, xPosition + (xIndicatorOffset * 1), yPosition, eventsList.get(1).getColor());
+        float xPositionFirstEvent = xPosition;
+        float xPositionSecondEvent = xPosition;
+
+        Event e1 = eventsList.get(0);
+        Event e2 = eventsList.get(1);
+        if (null != e1.getBitmap() && null != e2.getBitmap()) {
+            xPositionFirstEvent -= this.xIndicatorOffsetBig;
+            xPositionSecondEvent += this.xIndicatorOffsetBig;
+        } else if (null == e1.getBitmap() && null == e2.getBitmap()) {
+            xPositionFirstEvent -= this.xIndicatorOffset;
+            xPositionSecondEvent += this.xIndicatorOffset;
+        } else if (null != e1.getBitmap()) {
+            xPositionFirstEvent -= this.xIndicatorOffsetBig;
+        } else if (null != e2.getBitmap()) {
+            xPositionSecondEvent += this.xIndicatorOffsetBig;
+        }
+
+        drawIndicator(canvas, xPositionFirstEvent, yPosition, e1);
+        drawIndicator(canvas, xPositionSecondEvent, yPosition, e2);
     }
 
     //draw 2 eventsByMonthAndYearMap followed by plus indicator to show there are more than 2 eventsByMonthAndYearMap
@@ -938,6 +961,14 @@ class CompactCalendarController {
         }
     }
 
+    private void drawIndicator(Canvas canvas, float x, float y, Event event) {
+        if (null != event.getBitmap()) {
+            drawEventIndicatorBitmap(canvas, event.getBitmap(), x, y);
+        } else {
+            drawEventIndicatorCircle(canvas, x, y, event.getColor());
+        }
+    }
+
     private void drawEventIndicatorCircle(Canvas canvas, float x, float y, int color) {
         dayPaint.setColor(color);
         if (eventIndicatorStyle == SMALL_INDICATOR) {
@@ -953,5 +984,11 @@ class CompactCalendarController {
 
     private void drawCircle(Canvas canvas, float radius, float x, float y) {
         canvas.drawCircle(x, y, radius, dayPaint);
+    }
+
+    private void drawEventIndicatorBitmap(Canvas canvas, Bitmap bitmap, float x, float y) {
+        int height = bitmap.getHeight();
+        int width = bitmap.getWidth();
+        canvas.drawBitmap(bitmap, x - width/2, y - height/2 , dayPaint);
     }
 }
