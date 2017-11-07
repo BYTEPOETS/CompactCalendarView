@@ -14,6 +14,18 @@ public class Event {
         this.timeInMillis = timeInMillis;
     }
 
+    public Event(int color, long timeInMillis, Bitmap bitmap) {
+        this.color = color;
+        this.timeInMillis = timeInMillis;
+        this.bitmap = bitmap;
+    }
+
+    public Event(int color, long timeInMillis, Object data) {
+        this.color = color;
+        this.timeInMillis = timeInMillis;
+        this.data = data;
+    }
+
     public Event(int color, long timeInMillis, Object data, Bitmap bitmap) {
         this.color = color;
         this.timeInMillis = timeInMillis;
